@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400;500&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<style>
+:root{--bg:#ffffff;--fg:#0a0a0a;--muted:#6e6e6e;--line:#e9e9e9;--soft:#f5f5f5;--mono:"Geist Mono",ui-monospace,Menlo,monospace}
+[data-theme="dark"]{--bg:#0a0a0a;--fg:#f2f2f2;--muted:#8c8c8c;--line:#232323;--soft:#141414}
+body{margin:0;background:#fff;font-family:"Geist",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:var(--fg)}a:hover{color:var(--muted)}
+select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px!important;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+::selection{background:var(--fg);color:var(--bg)}
+</style>
+</helmet>
+<div data-theme="{{ theme }}" style="background:var(--bg);color:var(--fg);font-family:'Geist',system-ui,sans-serif;min-height:100vh;transition:background .4s,color .4s">
+<div style="display:grid;grid-template-columns:240px minmax(0,1fr);min-height:100vh">
+
+<aside style="position:sticky;top:0;height:100vh;border-right:1px solid var(--line);padding:26px 16px 18px;display:flex;flex-direction:column;gap:36px">
+<div data-side="1" style="display:flex;align-items:center;gap:10px;padding:0 10px">
+<div style="width:22px;height:22px;border-radius:6px;background:var(--fg)"></div>
+<span style="font-weight:600;font-size:16px;letter-spacing:-0.02em">SchoolHub</span>
+</div>
+
+<nav ref="{{ navRef }}" style="position:relative;display:flex;flex-direction:column;gap:2px">
+<div ref="{{ indRef }}" style="position:absolute;left:0;right:0;height:38px;border-radius:8px;background:var(--soft)"></div>
+<sc-if value="{{ nav.dashboard }}" hint-placeholder-val="{{ true }}"><button data-nav="dashboard" data-side="1" onClick="{{ goDashboard }}" style="position:relative;display:flex;align-items:center;gap:12px;height:38px;padding:0 10px;border:0;background:transparent;font-family:inherit;font-size:14px;font-weight:500;color:{{ navColor.dashboard }};cursor:pointer;text-align:left;transition:color .2s"><span style="font-family:var(--mono);font-size:10.5px;color:var(--muted)">01</span>Dashboard</button></sc-if>
+<sc-if value="{{ nav.students }}" hint-placeholder-val="{{ true }}"><button data-nav="students" data-side="1" onClick="{{ goStudents }}" style="position:relative;display:flex;align-items:center;gap:12px;height:38px;padding:0 10px;border:0;background:transparent;font-family:inherit;font-size:14px;font-weight:500;color:{{ navColor.students }};cursor:pointer;text-align:left;transition:color .2s"><span style="font-family:var(--mono);font-size:10.5px;color:var(--muted)">02</span>Students</button></sc-if>
+<sc-if value="{{ nav.teachers }}" hint-placeholder-val="{{ true }}"><button data-nav="teachers" data-side="1" onClick="{{ goTeachers }}" style="position:relative;display:flex;align-items:center;gap:12px;height:38px;padding:0 10px;border:0;background:transparent;font-family:inherit;font-size:14px;font-weight:500;color:{{ navColor.teachers }};cursor:pointer;text-align:left;transition:color .2s"><span style="font-family:var(--mono);font-size:10.5px;color:var(--muted)">03</span>Teachers</button></sc-if>
+<sc-if value="{{ nav.classes }}" hint-placeholder-val="{{ true }}"><button data-nav="classes" data-side="1" onClick="{{ goClasses }}" style="position:relative;display:flex;align-items:center;gap:12px;height:38px;padding:0 10px;border:0;background:transparent;font-family:inherit;font-size:14px;font-weight:500;color:{{ navColor.classes }};cursor:pointer;text-align:left;transition:color .2s"><span style="font-family:var(--mono);font-size:10.5px;color:var(--muted)">04</span>Classes</button></sc-if>
+<sc-if value="{{ nav.grades }}" hint-placeholder-val="{{ true }}"><button data-nav="grades" data-side="1" onClick="{{ goGrades }}" style="position:relative;display:flex;align-items:center;gap:12px;height:38px;padding:0 10px;border:0;background:transparent;font-family:inherit;font-size:14px;font-weight:500;color:{{ navColor.grades }};cursor:pointer;text-align:left;transition:color .2s"><span style="font-family:var(--mono);font-size:10.5px;color:var(--muted)">05</span>Grades</button></sc-if>
+<sc-if value="{{ nav.schedule }}" hint-placeholder-val="{{ true }}"><button data-nav="schedule" data-side="1" onClick="{{ goSchedule }}" style="position:relative;display:flex;align-items:center;gap:12px;height:38px;padding:0 10px;border:0;background:transparent;font-family:inherit;font-size:14px;font-weight:500;color:{{ navColor.schedule }};cursor:pointer;text-align:left;transition:color .2s"><span style="font-family:var(--mono);font-size:10.5px;color:var(--muted)">06</span>Schedule</button></sc-if>
+</nav>
+
+<div data-side="1" style="margin-top:auto;border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px">
+<span style="font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Dev · view as</span>
+<select value="{{ role }}" onChange="{{ setRole }}" style="height:36px;border:1px solid var(--line);border-radius:8px;background-color:var(--bg);color:var(--fg);font:inherit;font-size:13.5px;padding:0 10px"><option value="admin">Admin</option><option value="teacher">Teacher</option><option value="student">Student</option></select>
+<sc-if value="{{ isTeacher }}" hint-placeholder-val="{{ false }}"><select value="{{ teacherId }}" onChange="{{ setTeacher }}" style="height:36px;border:1px solid var(--line);border-radius:8px;background-color:var(--bg);color:var(--fg);font:inherit;font-size:13.5px;padding:0 10px"><sc-for list="{{ teacherOpts }}" as="o"><option value="{{ o.id }}">{{ o.label }}</option></sc-for></select></sc-if>
+<sc-if value="{{ isStudent }}" hint-placeholder-val="{{ false }}"><select value="{{ studentId }}" onChange="{{ setStudent }}" style="height:36px;border:1px solid var(--line);border-radius:8px;background-color:var(--bg);color:var(--fg);font:inherit;font-size:13.5px;padding:0 10px"><sc-for list="{{ personStudents }}" as="o"><option value="{{ o.id }}">{{ o.label }}</option></sc-for></select></sc-if>
+<button onClick="{{ askReset }}" style="align-self:flex-start;border:0;background:none;padding:2px 0;font:inherit;font-size:12px;color:var(--muted);cursor:pointer;text-decoration:underline;text-underline-offset:3px">Reset demo data</button>
+</div>
+</aside>
+
+<main ref="{{ mainRef }}" style="min-width:0;padding:30px 48px 80px;display:flex;flex-direction:column;gap:36px">
+<div data-anim="1" style="display:flex;align-items:center;gap:20px;justify-content:flex-end;font-size:13px">
+<span style="flex:1;font-family:var(--mono);font-size:11.5px;color:var(--muted)">{{ crumb }}</span>
+<sc-if value="{{ showSqlBtn }}" hint-placeholder-val="{{ true }}"><button onClick="{{ toggleSql }}" style="border:0;background:none;font:inherit;font-size:13px;color:{{ sqlColor }};cursor:pointer;padding:4px 0">SQL</button></sc-if>
+<button onClick="{{ toggleTheme }}" style="border:0;background:none;font:inherit;font-size:13px;color:var(--muted);cursor:pointer;padding:4px 0" style-hover="color:var(--fg)">{{ themeLabel }}</button>
+<div style="display:flex;align-items:center;gap:10px;padding-left:20px;border-left:1px solid var(--line)">
+<div style="width:30px;height:30px;border-radius:50%;background:var(--fg);color:var(--bg);display:grid;place-items:center;font-size:11px;font-weight:600">{{ me.ini }}</div>
+<div style="display:flex;flex-direction:column;line-height:1.25"><span style="font-weight:500;font-size:13px">{{ me.name }}</span><span style="font-size:11.5px;color:var(--muted)">{{ me.roleLabel }}</span></div>
+</div>
+</div>
+
+<header data-anim="1" style="display:flex;flex-direction:column;gap:10px;max-width:760px">
+<h1 style="margin:0;font-size:52px;line-height:1.02;font-weight:500;letter-spacing:-0.045em;overflow:hidden;padding-bottom:4px"><span data-title="1" style="display:inline-block">{{ pageTitle }}</span></h1>
+<p style="margin:0;font-size:16px;color:var(--muted);text-wrap:pretty">{{ subtitle }}</p>
+</header>
+
+<sc-if value="{{ sqlVisible }}" hint-placeholder-val="{{ false }}">
+<div data-anim="1" style="border:1px solid var(--line);border-radius:12px;background:var(--soft);padding:18px 20px;display:flex;flex-direction:column;gap:10px">
+<span style="font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">sqlite — query behind this view</span>
+<pre style="margin:0;font:12.5px/1.7 var(--mono);white-space:pre-wrap;color:var(--fg)">{{ sql }}</pre>
+</div>
+</sc-if>
+
+<!-- DASHBOARD -->
+<sc-if value="{{ is.dashboard }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;gap:40px">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+<sc-for list="{{ stats }}" as="s" hint-placeholder-count="3">
+<div data-anim="1" style="padding:26px 24px 26px 0;display:flex;flex-direction:column;gap:22px;border-right:1px solid var(--line);margin-right:24px">
+<span style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">{{ s.label }}</span>
+<div style="display:flex;align-items:baseline;gap:10px"><span style="font-size:76px;line-height:.9;font-weight:400;letter-spacing:-0.06em;font-variant-numeric:tabular-nums">{{ s.display }}</span><span style="font-size:13px;color:var(--muted)">{{ s.note }}</span></div>
+</div>
+</sc-for>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr));gap:48px;align-items:start">
+<div data-anim="1" style="display:flex;flex-direction:column">
+<div style="display:flex;align-items:baseline;justify-content:space-between;padding-bottom:14px;border-bottom:1px solid var(--fg)"><h2 style="margin:0;font-size:18px;font-weight:500;letter-spacing:-0.02em">Recent grades</h2><sc-if value="{{ nav.grades }}" hint-placeholder-val="{{ true }}"><button onClick="{{ goGrades }}" style="border:0;background:none;font:inherit;font-size:13px;color:var(--muted);cursor:pointer" style-hover="color:var(--fg)">View all →</button></sc-if></div>
+<sc-for list="{{ recentGrades }}" as="g" hint-placeholder-count="6">
+<div data-row="1" style="display:grid;grid-template-columns:minmax(0,1fr) auto 50px;gap:18px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)">
+<div style="display:flex;flex-direction:column;min-width:0;gap:2px"><span style="font-weight:500;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ g.title }}</span><span style="font-size:12.5px;color:var(--muted)">{{ g.sub }}</span></div>
+<span style="font-family:var(--mono);font-size:11.5px;color:var(--muted)">{{ g.date }}</span>
+<span style="height:28px;border-radius:999px;border:1px solid var(--fg);display:grid;place-items:center;font-family:var(--mono);font-size:12.5px;background:{{ g.b }};color:{{ g.f }}">{{ g.v }}</span>
+</div>
+</sc-for>
+<sc-if value="{{ noRecent }}" hint-placeholder-val="{{ false }}"><p style="margin:14px 0 0;color:var(--muted)">No grades yet.</p></sc-if>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:44px">
+<div data-anim="1" style="display:flex;flex-direction:column">
+<div style="padding-bottom:14px;border-bottom:1px solid var(--fg)"><h2 style="margin:0;font-size:18px;font-weight:500;letter-spacing:-0.02em">Upcoming tests</h2></div>
+<sc-for list="{{ tests }}" as="t" hint-placeholder-count="3">
+<div data-row="1" style="display:grid;grid-template-columns:54px minmax(0,1fr) auto;gap:16px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)">
+<div style="display:flex;flex-direction:column;line-height:1"><span style="font-size:26px;font-weight:400;letter-spacing:-0.04em">{{ t.day }}</span><span style="font-family:var(--mono);font-size:10.5px;text-transform:uppercase;color:var(--muted);margin-top:4px">{{ t.mon }}</span></div>
+<div style="display:flex;flex-direction:column;gap:2px;min-width:0"><span style="font-weight:500;font-size:14.5px">{{ t.title }}</span><span style="font-size:12.5px;color:var(--muted)">{{ t.cls }} · {{ t.sub }}</span></div>
+<span style="font-family:var(--mono);font-size:11.5px;color:var(--muted)">{{ t.when }}</span>
+</div>
+</sc-for>
+<sc-if value="{{ noTests }}" hint-placeholder-val="{{ false }}"><p style="margin:14px 0 0;color:var(--muted)">Nothing scheduled.</p></sc-if>
+</div>
+
+<div data-anim="1" style="display:flex;flex-direction:column">
+<div style="display:flex;align-items:baseline;justify-content:space-between;padding-bottom:14px;border-bottom:1px solid var(--fg)"><h2 style="margin:0;font-size:18px;font-weight:500;letter-spacing:-0.02em">Today</h2><span style="font-family:var(--mono);font-size:11.5px;color:var(--muted)">{{ todayCount }}</span></div>
+<sc-for list="{{ today }}" as="l" hint-placeholder-count="4">
+<div data-row="1" style="display:grid;grid-template-columns:54px minmax(0,1fr) auto;gap:16px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)">
+<span style="font-family:var(--mono);font-size:12px">{{ l.start }}</span>
+<div style="display:flex;flex-direction:column;min-width:0;gap:2px"><span style="font-weight:500;font-size:14px">{{ l.subject }}</span><span style="font-size:12.5px;color:var(--muted)">{{ l.meta }}</span></div>
+<span style="font-family:var(--mono);font-size:11.5px;color:var(--muted)">{{ l.room }}</span>
+</div>
+</sc-for>
+<sc-if value="{{ noToday }}" hint-placeholder-val="{{ false }}"><p style="margin:14px 0 0;color:var(--muted)">No lessons today.</p></sc-if>
+</div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<!-- STUDENTS -->
+<sc-if value="{{ is.students }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:20px">
+<div data-anim="1" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+<input placeholder="Search name or email" value="{{ search }}" onChange="{{ setSearch }}" style="flex:0 1 300px;min-width:200px;height:40px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);font:inherit;font-size:14px;padding:0 14px" style-focus="border-color:var(--fg);outline:none">
+<select value="{{ classFilter }}" onChange="{{ setClassFilter }}" style="height:40px;border:1px solid var(--line);border-radius:8px;background-color:var(--bg);color:var(--fg);font:inherit;font-size:14px;padding:0 14px"><option value="all">All classes</option><sc-for list="{{ classOpts }}" as="o"><option value="{{ o.id }}">{{ o.name }}</option></sc-for></select>
+<div style="flex:1"></div>
+<button onClick="{{ addStudent }}" style="height:40px;padding:0 18px;border:0;border-radius:8px;background:var(--fg);color:var(--bg);font:inherit;font-size:14px;font-weight:500;cursor:pointer" style-hover="opacity:.82">+ Add student</button>
+</div>
+<div data-anim="1" style="overflow-x:auto">
+<table style="width:100%;min-width:640px;border-collapse:collapse;font-size:14px">
+<thead><tr>
+<th style="text-align:left;font-family:var(--mono);font-weight:400;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0 0 12px;border-bottom:1px solid var(--fg)">Student</th>
+<th style="text-align:left;font-family:var(--mono);font-weight:400;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0 0 12px;border-bottom:1px solid var(--fg)">Email</th>
+<th style="text-align:left;font-family:var(--mono);font-weight:400;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0 0 12px;border-bottom:1px solid var(--fg)">Class</th>
+<th style="text-align:left;font-family:var(--mono);font-weight:400;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0 0 12px;border-bottom:1px solid var(--fg)">Average</th>
+<th style="text-align:right;font-family:var(--mono);font-weight:400;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0 0 12px;border-bottom:1px solid var(--fg)"></th>
+</tr></thead>
+<tbody>
+<sc-for list="{{ studentRows }}" as="s" hint-placeholder-count="8">
+<tr data-row="1" onClick="{{ s.open }}" style="cursor:pointer;transition:background .15s" style-hover="background:var(--soft)">
+<td style="padding:13px 0;border-bottom:1px solid var(--line)"><div style="display:flex;align-items:center;gap:12px"><div style="width:30px;height:30px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font-size:11px;font-weight:600">{{ s.ini }}</div><span style="font-weight:500">{{ s.name }}</span></div></td>
+<td style="padding:13px 0;border-bottom:1px solid var(--line);color:var(--muted)">{{ s.email }}</td>
+<td style="padding:13px 0;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:12.5px">{{ s.cls }}</td>
+<td style="padding:13px 0;border-bottom:1px solid var(--line)"><span style="display:inline-grid;place-items:center;min-width:46px;height:26px;padding:0 9px;border-radius:999px;border:1px solid var(--fg);font-family:var(--mono);font-size:12px;background:{{ s.gb }};color:{{ s.gf }}">{{ s.avg }}</span></td>
+<td style="padding:13px 0;border-bottom:1px solid var(--line)"><div style="display:flex;justify-content:flex-end;gap:16px"><button onClick="{{ s.edit }}" style="border:0;background:none;font:inherit;font-size:13px;color:var(--muted);cursor:pointer;padding:0" style-hover="color:var(--fg)">Edit</button><button onClick="{{ s.del }}" style="border:0;background:none;font:inherit;font-size:13px;color:var(--muted);cursor:pointer;padding:0" style-hover="color:var(--fg)">Delete</button></div></td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+<sc-if value="{{ noStudents }}" hint-placeholder-val="{{ false }}"><p style="margin:18px 0;color:var(--muted)">No students match this search.</p></sc-if>
+</div>
+</div>
+</sc-if>
+
+<!-- TEACHERS -->
+<sc-if value="{{ is.teachers }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:20px">
+<div data-anim="1" style="display:flex;justify-content:flex-end"><button onClick="{{ addTeacher }}" style="height:40px;padding:0 18px;border:0;border-radius:8px;background:var(--fg);color:var(--bg);font:inherit;font-size:14px;font-weight:500;cursor:pointer" style-hover="opacity:.82">+ Add teacher</button></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px">
+<sc-for list="{{ teacherCards }}" as="t" hint-placeholder-count="6">
+<div data-anim="1" style="border:1px solid var(--line);border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:18px;transition:border-color .2s" style-hover="border-color:var(--fg)">
+<div style="display:flex;align-items:center;gap:14px">
+<div style="width:44px;height:44px;flex:none;border-radius:50%;background:var(--fg);color:var(--bg);display:grid;place-items:center;font-size:14px;font-weight:600">{{ t.ini }}</div>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px"><span style="font-size:16.5px;font-weight:500;letter-spacing:-0.02em">{{ t.name }}</span><span style="font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis">{{ t.email }}</span></div>
+</div>
+<div style="display:flex;gap:6px;flex-wrap:wrap;min-height:26px"><sc-for list="{{ t.subjects }}" as="sb"><span style="height:26px;padding:0 11px;border-radius:999px;border:1px solid var(--line);display:inline-flex;align-items:center;font-size:12.5px">{{ sb.name }}</span></sc-for><sc-if value="{{ t.noSubjects }}" hint-placeholder-val="{{ false }}"><span style="font-size:12.5px;color:var(--muted)">No subjects assigned</span></sc-if></div>
+<div style="display:flex;align-items:flex-end;gap:16px;padding-top:14px;border-top:1px solid var(--line)">
+<div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-family:var(--mono);font-size:12px">{{ t.classes }}</span><span style="font-size:12px;color:var(--muted)">{{ t.hours }}</span></div>
+<button onClick="{{ t.edit }}" style="border:0;background:none;font:inherit;font-size:13px;color:var(--muted);cursor:pointer;padding:0" style-hover="color:var(--fg)">Edit</button>
+<button onClick="{{ t.del }}" style="border:0;background:none;font:inherit;font-size:13px;color:var(--muted);cursor:pointer;padding:0" style-hover="color:var(--fg)">Delete</button>
+</div>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<!-- CLASSES -->
+<sc-if value="{{ is.classList }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:20px">
+<sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ true }}"><div data-anim="1" style="display:flex;justify-content:flex-end"><button onClick="{{ addClass }}" style="height:40px;padding:0 18px;border:0;border-radius:8px;background:var(--fg);color:var(--bg);font:inherit;font-size:14px;font-weight:500;cursor:pointer" style-hover="opacity:.82">+ Create class</button></div></sc-if>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px">
+<sc-for list="{{ classCards }}" as="c" hint-placeholder-count="4">
+<button data-anim="1" onClick="{{ c.open }}" style="text-align:left;border:1px solid var(--line);border-radius:14px;cursor:pointer;font:inherit;color:inherit;background:var(--bg);padding:22px;min-height:230px;display:flex;flex-direction:column;gap:10px;transition:background .25s,color .25s,border-color .25s" style-hover="background:var(--fg);color:var(--bg);border-color:var(--fg)">
+<div style="display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;opacity:.65"><span>Year {{ c.year }}</span><span>→</span></div>
+<span style="font-size:68px;line-height:1;font-weight:400;letter-spacing:-0.06em;margin-top:8px">{{ c.name }}</span>
+<div style="margin-top:auto;display:flex;flex-direction:column;gap:2px;font-size:13px"><span style="font-weight:500">{{ c.count }}</span><span style="opacity:.65">{{ c.meta }}</span></div>
+</button>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.classDetail }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:28px">
+<div data-anim="1" style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+<button onClick="{{ backToClasses }}" style="height:36px;padding:0 14px;border:1px solid var(--line);border-radius:8px;background:none;color:var(--fg);font:inherit;font-size:13px;cursor:pointer" style-hover="border-color:var(--fg)">← All classes</button>
+<span style="font-family:var(--mono);font-size:12px;color:var(--muted)">Year {{ cd.year }} · {{ cd.countLabel }}</span>
+<div style="flex:1"></div>
+<sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ true }}"><div style="display:flex;gap:18px"><button onClick="{{ cd.edit }}" style="border:0;background:none;font:inherit;font-size:13px;color:var(--muted);cursor:pointer;padding:0" style-hover="color:var(--fg)">Rename</button><button onClick="{{ cd.del }}" style="border:0;background:none;font:inherit;font-size:13px;color:var(--muted);cursor:pointer;padding:0" style-hover="color:var(--fg)">Delete class</button></div></sc-if>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:48px;align-items:start">
+<div data-anim="1" style="display:flex;flex-direction:column">
+<div style="padding-bottom:14px;border-bottom:1px solid var(--fg)"><h2 style="margin:0;font-size:18px;font-weight:500;letter-spacing:-0.02em">Students</h2></div>
+<sc-for list="{{ cd.students }}" as="s" hint-placeholder-count="6">
+<div data-row="1" style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)">
+<div style="width:28px;height:28px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font-size:10.5px;font-weight:600">{{ s.ini }}</div>
+<span style="flex:1;font-weight:500;font-size:14px">{{ s.name }}</span>
+<span style="font-family:var(--mono);font-size:12px;color:var(--muted)">{{ s.avg }}</span>
+<sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ true }}"><button title="Remove from class" onClick="{{ s.remove }}" style="border:0;background:none;font:inherit;font-size:16px;line-height:1;color:var(--muted);cursor:pointer;padding:0 0 0 8px" style-hover="color:var(--fg)">×</button></sc-if>
+</div>
+</sc-for>
+<sc-if value="{{ cd.empty }}" hint-placeholder-val="{{ false }}"><p style="margin:14px 0 0;color:var(--muted)">No students in this class yet.</p></sc-if>
+<sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap">
+<select value="{{ addSel }}" onChange="{{ setAddSel }}" style="flex:1;min-width:180px;height:40px;border:1px solid var(--line);border-radius:8px;background-color:var(--bg);color:var(--fg);font:inherit;font-size:14px;padding:0 14px"><option value="">Add a student…</option><sc-for list="{{ cd.addOpts }}" as="o"><option value="{{ o.id }}">{{ o.label }}</option></sc-for></select>
+<button onClick="{{ cd.add }}" style="height:40px;padding:0 18px;border:0;border-radius:8px;background:var(--fg);color:var(--bg);font:inherit;font-size:14px;font-weight:500;cursor:pointer" style-hover="opacity:.82">Add</button>
+</div>
+</sc-if>
+</div>
+<div data-anim="1" style="display:flex;flex-direction:column">
+<div style="padding-bottom:14px;border-bottom:1px solid var(--fg);display:flex;flex-direction:column;gap:4px"><h2 style="margin:0;font-size:18px;font-weight:500;letter-spacing:-0.02em">Subjects &amp; teachers</h2><span style="font-size:12.5px;color:var(--muted)">Assigning a teacher updates every lesson of that subject for {{ cd.name }}.</span></div>
+<sc-for list="{{ cd.subjects }}" as="s" hint-placeholder-count="6">
+<div data-row="1" style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)">
+<div style="flex:1;display:flex;flex-direction:column"><span style="font-weight:500;font-size:14px">{{ s.name }}</span><span style="font-family:var(--mono);font-size:11px;color:var(--muted)">{{ s.hours }}</span></div>
+<sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ true }}"><select value="{{ s.teacherId }}" onChange="{{ s.change }}" style="width:190px;height:36px;border:1px solid var(--line);border-radius:8px;background-color:var(--bg);color:var(--fg);font:inherit;font-size:13px;padding:0 12px"><option value="">Unassigned</option><sc-for list="{{ teacherOpts }}" as="o"><option value="{{ o.id }}">{{ o.label }}</option></sc-for></select></sc-if>
+<sc-if value="{{ notAdmin }}" hint-placeholder-val="{{ false }}"><span style="font-size:13.5px">{{ s.teacher }}</span></sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+</sc-if>
+
+<!-- GRADES -->
+<sc-if value="{{ is.grades }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-wrap:wrap;gap:48px;align-items:flex-start">
+<sc-if value="{{ canEnter }}" hint-placeholder-val="{{ true }}">
+<div data-anim="1" style="flex:0 1 340px;min-width:270px;background:var(--fg);color:var(--bg);border-radius:16px;padding:26px;display:flex;flex-direction:column;gap:16px">
+<span style="font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;opacity:.6">New entry</span>
+<h2 style="margin:0 0 4px;font-size:24px;font-weight:500;letter-spacing:-0.03em">Enter a grade</h2>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;opacity:.9">Student<select value="{{ gStudentId }}" onChange="{{ setGStudent }}" style="height:40px;border:1px solid rgba(128,128,128,.4);border-radius:8px;background-color:transparent;color:inherit;font:inherit;font-size:14px;padding:0 12px"><sc-for list="{{ gStudentOpts }}" as="o"><option value="{{ o.id }}" style="color:#0a0a0a">{{ o.label }}</option></sc-for></select></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;opacity:.9">Subject<select value="{{ gSubjectId }}" onChange="{{ setGSubject }}" style="height:40px;border:1px solid rgba(128,128,128,.4);border-radius:8px;background-color:transparent;color:inherit;font:inherit;font-size:14px;padding:0 12px"><sc-for list="{{ gSubjectOpts }}" as="o"><option value="{{ o.id }}" style="color:#0a0a0a">{{ o.name }}</option></sc-for></select></label>
+<div style="display:grid;grid-template-columns:1fr 1.25fr;gap:10px">
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;opacity:.9">Grade (1–10)<input type="number" min="1" max="10" step="0.1" placeholder="7.5" value="{{ gGrade }}" onChange="{{ setGGrade }}" onKeyDown="{{ gradeKey }}" style="height:40px;border:1px solid rgba(128,128,128,.4);border-radius:8px;background:transparent;color:inherit;font-family:var(--mono);font-size:15px;padding:0 12px"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;opacity:.9">Date<input type="date" value="{{ gDate }}" onChange="{{ setGDate }}" style="height:40px;border:1px solid rgba(128,128,128,.4);border-radius:8px;background:transparent;color:inherit;font:inherit;font-size:13px;padding:0 10px;color-scheme:dark light"></label>
+</div>
+<sc-if value="{{ gError }}" hint-placeholder-val="{{ false }}"><span style="font-size:12.5px">{{ gError }}</span></sc-if>
+<button onClick="{{ addGrade }}" style="height:42px;border:0;border-radius:8px;background:var(--bg);color:var(--fg);font:inherit;font-size:14px;font-weight:500;cursor:pointer;margin-top:4px" style-hover="opacity:.85">Save grade</button>
+</div>
+</sc-if>
+
+<div data-anim="1" style="flex:1 1 480px;min-width:0;display:flex;flex-direction:column;gap:28px">
+<div data-ov="1" style="display:flex;align-items:center;gap:28px;flex-wrap:wrap">
+<div style="position:relative;width:132px;height:132px;flex:none">
+<svg width="132" height="132" viewBox="0 0 132 132"><circle cx="66" cy="66" r="58" fill="none" stroke-width="3" style="stroke:var(--line)"></circle><circle cx="66" cy="66" r="58" fill="none" stroke-width="3" stroke-linecap="round" stroke-dasharray="364.42" style="stroke:var(--fg);stroke-dashoffset:{{ ov.offset }};transition:stroke-dashoffset 1.2s cubic-bezier(.2,.8,.2,1);transform:rotate(-90deg);transform-origin:66px 66px"></circle></svg>
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1"><span style="font-size:38px;font-weight:400;letter-spacing:-0.05em">{{ ov.avg }}</span><span style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:6px;letter-spacing:.08em;text-transform:uppercase">average</span></div>
+</div>
+<div style="flex:1;min-width:200px;display:flex;flex-direction:column;gap:6px">
+<span style="font-size:30px;font-weight:500;letter-spacing:-0.035em;line-height:1.1">{{ ov.name }}</span>
+<span style="font-family:var(--mono);font-size:12px;color:var(--muted)">{{ ov.meta }}</span>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;border-top:1px solid var(--fg)">
+<sc-for list="{{ ov.subjects }}" as="r" hint-placeholder-count="6">
+<div data-row="1" style="display:grid;grid-template-columns:minmax(120px,170px) minmax(0,1fr) 70px;gap:18px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)">
+<div style="display:flex;flex-direction:column;min-width:0;gap:1px"><span style="font-weight:500;font-size:14px">{{ r.name }}</span><span style="font-size:12px;color:var(--muted)">{{ r.teacher }}</span></div>
+<div style="display:flex;gap:6px;flex-wrap:wrap"><sc-for list="{{ r.chips }}" as="c"><span data-gid="{{ c.id }}" title="{{ c.date }}" style="min-width:40px;height:26px;padding:0 8px;border-radius:999px;border:1px solid var(--fg);display:grid;place-items:center;font-family:var(--mono);font-size:12px;background:{{ c.b }};color:{{ c.f }}">{{ c.v }}</span></sc-for><sc-if value="{{ r.none }}" hint-placeholder-val="{{ false }}"><span style="font-size:12.5px;color:var(--muted)">No grades yet</span></sc-if></div>
+<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><span style="font-size:18px;letter-spacing:-0.03em">{{ r.avg }}</span><div style="width:60px;height:2px;background:var(--line)"><div style="height:100%;width:{{ r.bar }};background:var(--fg);transition:width .9s ease"></div></div></div>
+</div>
+</sc-for>
+</div>
+<span style="font-size:12px;color:var(--muted)">Filled grades are below 5.5 (insufficient).</span>
+</div>
+</div>
+</sc-if>
+
+<!-- SCHEDULE -->
+<sc-if value="{{ is.schedule }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:20px">
+<div data-anim="1" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+<sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ true }}"><div style="display:flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:10px"><sc-for list="{{ schedTabs }}" as="o"><button onClick="{{ o.pick }}" style="border:0;font:inherit;font-size:13px;font-weight:500;padding:6px 14px;border-radius:7px;cursor:pointer;background:{{ o.bg }};color:{{ o.fg }};transition:background .2s,color .2s">{{ o.name }}</button></sc-for></div></sc-if>
+<span style="font-family:var(--mono);font-size:12px;color:var(--muted)">{{ schedNote }}</span>
+<div style="flex:1"></div>
+<sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ true }}"><button onClick="{{ addLesson }}" style="height:40px;padding:0 18px;border:0;border-radius:8px;background:var(--fg);color:var(--bg);font:inherit;font-size:14px;font-weight:500;cursor:pointer" style-hover="opacity:.82">+ Add lesson</button></sc-if>
+</div>
+<div data-anim="1" style="overflow-x:auto">
+<div style="min-width:780px;display:flex;flex-direction:column;gap:6px">
+<div style="display:grid;grid-template-columns:60px repeat(5,minmax(0,1fr));gap:6px;padding-bottom:8px;border-bottom:1px solid var(--fg);margin-bottom:6px">
+<span></span>
+<sc-for list="{{ dayHeads }}" as="h"><div style="display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:500;color:{{ h.fg }}">{{ h.name }}<sc-if value="{{ h.today }}" hint-placeholder-val="{{ false }}"><span style="font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:999px;background:var(--fg);color:var(--bg);letter-spacing:.04em">TODAY</span></sc-if></div></sc-for>
+</div>
+<sc-for list="{{ schedRows }}" as="row" hint-placeholder-count="6">
+<sc-if value="{{ row.isBreak }}" hint-placeholder-val="{{ false }}"><div style="display:grid;grid-template-columns:60px minmax(0,1fr);gap:6px;align-items:center;height:22px"><span style="font-family:var(--mono);font-size:10.5px;color:var(--muted)">{{ row.time }}</span><div style="display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">{{ row.label }}<span style="flex:1;height:1px;background:var(--line)"></span></div></div></sc-if>
+<sc-if value="{{ row.isSlot }}" hint-placeholder-val="{{ true }}"><div style="display:grid;grid-template-columns:60px repeat(5,minmax(0,1fr));gap:6px">
+<div style="display:flex;flex-direction:column;justify-content:center;font-family:var(--mono);font-size:11.5px;line-height:1.5"><span>{{ row.start }}</span><span style="color:var(--muted)">{{ row.end }}</span></div>
+<sc-for list="{{ row.cells }}" as="c">
+<sc-if value="{{ c.has }}" hint-placeholder-val="{{ false }}"><button data-block="1" onClick="{{ c.click }}" style="height:84px;border:1px solid {{ c.bd }};text-align:left;font:inherit;border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;justify-content:space-between;background:{{ c.bg }};color:{{ c.fg }};cursor:{{ c.cursor }};overflow:hidden;transition:border-color .2s" style-hover="border-color:var(--fg)"><span style="font-size:14px;font-weight:500;letter-spacing:-0.01em">{{ c.subject }}</span><span style="font-size:12px;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.line }}</span><span style="font-family:var(--mono);font-size:10.5px;opacity:.7">{{ c.room }}</span></button></sc-if>
+<sc-if value="{{ c.empty }}" hint-placeholder-val="{{ true }}"><button onClick="{{ c.click }}" title="{{ c.hint }}" style="height:84px;border-radius:10px;border:1px dashed var(--line);font:inherit;font-size:16px;color:var(--muted);background:transparent;cursor:{{ c.cursor }}" style-hover="border-color:var(--muted)">{{ c.plus }}</button></sc-if>
+</sc-for>
+</div></sc-if>
+</sc-for>
+</div>
+</div>
+</div>
+</sc-if>
+</main>
+</div>
+
+<!-- STUDENT DRAWER -->
+<sc-if value="{{ hasDetail }}" hint-placeholder-val="{{ false }}">
+<div ref="{{ drawerBg }}" onClick="{{ closeDetail }}" style="position:fixed;inset:0;background:rgba(10,10,10,.28);backdrop-filter:blur(3px);z-index:40">
+<div ref="{{ drawerBox }}" onClick="{{ stop }}" style="position:absolute;top:0;right:0;bottom:0;width:min(460px,100%);background:var(--bg);color:var(--fg);border-left:1px solid var(--line);padding:30px;overflow-y:auto;display:flex;flex-direction:column;gap:26px">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-family:var(--mono);font-size:11px;color:var(--muted)">students / {{ dt.id }}</span><button onClick="{{ closeDetail }}" style="border:0;background:none;font:inherit;font-size:13px;color:var(--muted);cursor:pointer" style-hover="color:var(--fg)">Close ✕</button></div>
+<div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:34px;font-weight:500;letter-spacing:-0.04em;line-height:1.05">{{ dt.name }}</span><span style="font-size:13.5px;color:var(--muted)">{{ dt.email }}</span></div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+<div style="padding:14px 0;display:flex;flex-direction:column;gap:6px"><span style="font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Class</span><span style="font-size:24px;letter-spacing:-0.04em">{{ dt.cls }}</span></div>
+<div style="padding:14px 0 14px 14px;border-left:1px solid var(--line);display:flex;flex-direction:column;gap:6px"><span style="font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Average</span><span style="font-size:24px;letter-spacing:-0.04em">{{ dt.avg }}</span></div>
+<div style="padding:14px 0 14px 14px;border-left:1px solid var(--line);display:flex;flex-direction:column;gap:6px"><span style="font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Lessons/wk</span><span style="font-size:24px;letter-spacing:-0.04em">{{ dt.lessons }}</span></div>
+</div>
+<div style="display:flex;flex-direction:column">
+<span style="font-size:15px;font-weight:500;padding-bottom:10px;border-bottom:1px solid var(--fg)">Subjects &amp; grades</span>
+<sc-for list="{{ dt.subjects }}" as="r">
+<div style="display:flex;flex-direction:column;gap:8px;padding:12px 0;border-bottom:1px solid var(--line)">
+<div style="display:flex;align-items:baseline;gap:10px"><span style="flex:1;font-weight:500;font-size:14px">{{ r.name }}</span><span style="font-size:12px;color:var(--muted)">{{ r.teacher }}</span><span style="font-family:var(--mono);font-size:13px;min-width:30px;text-align:right">{{ r.avg }}</span></div>
+<div style="display:flex;gap:5px;flex-wrap:wrap"><sc-for list="{{ r.chips }}" as="c"><span title="{{ c.date }}" style="min-width:36px;height:24px;padding:0 7px;border-radius:999px;border:1px solid var(--fg);display:grid;place-items:center;font-family:var(--mono);font-size:11px;background:{{ c.b }};color:{{ c.f }}">{{ c.v }}</span></sc-for><sc-if value="{{ r.none }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;color:var(--muted)">No grades yet</span></sc-if></div>
+</div>
+</sc-for>
+</div>
+<div style="display:flex;gap:8px;margin-top:auto"><button onClick="{{ dt.edit }}" style="height:40px;padding:0 18px;border:0;border-radius:8px;background:var(--fg);color:var(--bg);font:inherit;font-size:14px;font-weight:500;cursor:pointer" style-hover="opacity:.82">Edit student</button><button onClick="{{ dt.grade }}" style="height:40px;padding:0 18px;border:1px solid var(--line);border-radius:8px;background:none;color:var(--fg);font:inherit;font-size:14px;cursor:pointer" style-hover="border-color:var(--fg)">Enter grade</button></div>
+</div>
+</div>
+</sc-if>
+
+<!-- MODAL -->
+<sc-if value="{{ hasModal }}" hint-placeholder-val="{{ false }}">
+<div ref="{{ modalBg }}" onClick="{{ closeModal }}" style="position:fixed;inset:0;display:grid;place-items:center;padding:20px;background:rgba(10,10,10,.32);backdrop-filter:blur(4px);z-index:50">
+<div ref="{{ modalBox }}" onClick="{{ stop }}" style="width:min(460px,100%);background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:16px;box-shadow:0 30px 80px rgba(0,0,0,.18)">
+<span style="font-size:22px;font-weight:500;letter-spacing:-0.03em">{{ modalTitle }}</span>
+
+<sc-if value="{{ mIs.person }}" hint-placeholder-val="{{ false }}">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted)">First name<input name="first_name" value="{{ form.first_name }}" onChange="{{ onForm }}" style="height:40px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);font:inherit;font-size:14px;padding:0 12px" style-focus="border-color:var(--fg);outline:none"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted)">Last name<input name="last_name" value="{{ form.last_name }}" onChange="{{ onForm }}" style="height:40px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);font:inherit;font-size:14px;padding:0 12px" style-focus="border-color:var(--fg);outline:none"></label>
+</div>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted)">Email<input name="email" placeholder="Generated if left empty" value="{{ form.email }}" onChange="{{ onForm }}" style="height:40px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);font:inherit;font-size:14px;padding:0 12px" style-focus="border-color:var(--fg);outline:none"></label>
+</sc-if>
+<sc-if value="{{ mIs.student }}" hint-placeholder-val="{{ false }}">
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted)">Class<select name="class_id" value="{{ form.class_id }}" onChange="{{ onForm }}" style="height:40px;border:1px solid var(--line);border-radius:8px;background-color:var(--bg);color:var(--fg);font:inherit;font-size:14px;padding:0 12px"><option value="">No class</option><sc-for list="{{ classOpts }}" as="o"><option value="{{ o.id }}">{{ o.name }}</option></sc-for></select></label>
+</sc-if>
+<sc-if value="{{ mIs.teacher }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:8px;font-size:12px;color:var(--muted)">Subjects taught<div style="display:flex;gap:6px;flex-wrap:wrap"><sc-for list="{{ subjectToggles }}" as="o"><button onClick="{{ o.toggle }}" style="height:30px;border:1px solid var(--fg);font:inherit;font-size:12.5px;padding:0 12px;border-radius:999px;cursor:pointer;background:{{ o.bg }};color:{{ o.fg }}">{{ o.name }}</button></sc-for></div></div>
+</sc-if>
+<sc-if value="{{ mIs.klass }}" hint-placeholder-val="{{ false }}">
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:12px">
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted)">Class name<input name="name" placeholder="4V1" value="{{ form.name }}" onChange="{{ onForm }}" style="height:40px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);font:inherit;font-size:14px;padding:0 12px" style-focus="border-color:var(--fg);outline:none"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted)">Year<input name="year" type="number" min="1" max="6" value="{{ form.year }}" onChange="{{ onForm }}" style="height:40px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);font:inherit;font-size:14px;padding:0 12px" style-focus="border-color:var(--fg);outline:none"></label>
+</div>
+</sc-if>
+<sc-if value="{{ mIs.lesson }}" hint-placeholder-val="{{ false }}">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted)">Class<select name="class_id" value="{{ form.class_id }}" onChange="{{ onForm }}" style="height:40px;border:1px solid var(--line);border-radius:8px;background-color:var(--bg);color:var(--fg);font:inherit;font-size:14px;padding:0 12px"><sc-for list="{{ classOpts }}" as="o"><option value="{{ o.id }}">{{ o.name }}</option></sc-for></select></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted)">Subject<select name="subject_id" value="{{ form.subject_id }}" onChange="{{ onForm }}" style="height:40px;border:1px solid var(--line);border-radius:8px;background-color:var(--bg);color:var(--fg);font:inherit;font-size:14px;padding:0 12px"><option value="">Choose…</option><sc-for list="{{ subjectOpts }}" as="o"><option value="{{ o.id }}">{{ o.name }}</option></sc-for></select></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted)">Teacher<select name="teacher_id" value="{{ form.teacher_id }}" onChange="{{ onForm }}" style="height:40px;border:1px solid var(--line);border-radius:8px;background-color:var(--bg);color:var(--fg);font:inherit;font-size:14px;padding:0 12px"><option value="">Unassigned</option><sc-for list="{{ teacherOpts }}" as="o"><option value="{{ o.id }}">{{ o.label }}</option></sc-for></select></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted)">Classroom<input name="room" value="{{ form.room }}" onChange="{{ onForm }}" placeholder="B1.04" style="height:40px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);font:inherit;font-size:14px;padding:0 12px" style-focus="border-color:var(--fg);outline:none"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted)">Day<select name="day" value="{{ form.day }}" onChange="{{ onForm }}" style="height:40px;border:1px solid var(--line);border-radius:8px;background-color:var(--bg);color:var(--fg);font:inherit;font-size:14px;padding:0 12px"><sc-for list="{{ dayOpts }}" as="o"><option value="{{ o }}">{{ o }}</option></sc-for></select></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted)">Time<select name="slot" value="{{ form.slot }}" onChange="{{ onForm }}" style="height:40px;border:1px solid var(--line);border-radius:8px;background-color:var(--bg);color:var(--fg);font:inherit;font-size:14px;padding:0 12px"><sc-for list="{{ slotOpts }}" as="o"><option value="{{ o.v }}">{{ o.label }}</option></sc-for></select></label>
+</div>
+</sc-if>
+<sc-if value="{{ mIs.confirm }}" hint-placeholder-val="{{ false }}"><p style="margin:0;font-size:14.5px;color:var(--muted);text-wrap:pretty">{{ form.body }}</p></sc-if>
+
+<sc-if value="{{ form.error }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;font-weight:500">{{ form.error }}</span></sc-if>
+<div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+<sc-if value="{{ mIs.lessonEdit }}" hint-placeholder-val="{{ false }}"><button onClick="{{ deleteLesson }}" style="border:0;background:none;font:inherit;font-size:13px;color:var(--muted);cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:3px">Delete lesson</button></sc-if>
+<div style="flex:1"></div>
+<button onClick="{{ closeModal }}" style="height:40px;padding:0 16px;border:1px solid var(--line);border-radius:8px;background:none;color:var(--fg);font:inherit;font-size:14px;cursor:pointer" style-hover="border-color:var(--fg)">Cancel</button>
+<button onClick="{{ saveModal }}" style="height:40px;padding:0 18px;border:0;border-radius:8px;background:var(--fg);color:var(--bg);font:inherit;font-size:14px;font-weight:500;cursor:pointer" style-hover="opacity:.82">{{ modalCta }}</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+<div style="position:fixed;left:0;right:0;bottom:28px;display:flex;justify-content:center;pointer-events:none;z-index:60">
+<div ref="{{ toastRef }}" style="background:var(--fg);color:var(--bg);border-radius:999px;padding:11px 20px;font-size:13.5px;font-weight:500;box-shadow:0 12px 30px rgba(0,0,0,.2)">{{ toastMsg }}</div>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;motion&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;expressive&quot;,&quot;subtle&quot;,&quot;off&quot;],&quot;default&quot;:&quot;expressive&quot;,&quot;tsType&quot;:&quot;'expressive'|'subtle'|'off'&quot;},&quot;showSql&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;startRole&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;admin&quot;,&quot;teacher&quot;,&quot;student&quot;],&quot;default&quot;:&quot;admin&quot;,&quot;tsType&quot;:&quot;'admin'|'teacher'|'student'&quot;},&quot;startTheme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light'|'dark'&quot;}}">
+const KEY='schoolhub-data-v2';
+const SLOTS=[['08:30','09:20'],['09:20','10:10'],['10:30','11:20'],['11:20','12:10'],['12:40','13:30'],['13:30','14:20']];
+const DAYS=['Monday','Tuesday','Wednesday','Thursday','Friday'];
+const TODAY='Wednesday',TODAY_DATE='2026-10-07';
+const NAV={admin:['dashboard','students','teachers','classes','grades','schedule'],teacher:['dashboard','classes','grades','schedule'],student:['dashboard','grades','schedule']};
+const ROOMS={1:'B1.04',2:'A2.11',3:'A2.07',4:'C0.02',5:'A1.15',6:'A1.18',7:'C0.05',8:'C0.03',9:'D0.01'};
+const TITLES={students:'Students',teachers:'Teachers',classes:'Classes',grades:'Grades',schedule:'Schedule'};
+const SQL={
+dashboard:`SELECT
+  (SELECT COUNT(*) FROM students) AS students,
+  (SELECT COUNT(*) FROM teachers) AS teachers,
+  (SELECT COUNT(*) FROM classes)  AS classes;
+
+SELECT s.first_name, s.last_name, sub.name, g.grade, g.date
+FROM grades g
+JOIN students s   ON s.id = g.student_id
+JOIN subjects sub ON sub.id = g.subject_id
+ORDER BY g.date DESC LIMIT 6;`,
+students:`SELECT s.id, s.first_name, s.last_name, s.email,
+       c.name AS class, ROUND(AVG(g.grade), 1) AS average
+FROM students s
+LEFT JOIN classes c ON c.id = s.class_id
+LEFT JOIN grades g  ON g.student_id = s.id
+GROUP BY s.id
+ORDER BY s.last_name;`,
+teachers:`SELECT t.id, t.first_name, t.last_name, t.email,
+       GROUP_CONCAT(DISTINCT sub.name) AS subjects,
+       GROUP_CONCAT(DISTINCT c.name)   AS classes
+FROM teachers t
+LEFT JOIN subjects sub ON sub.teacher_id = t.id
+LEFT JOIN lessons l    ON l.teacher_id = t.id
+LEFT JOIN classes c    ON c.id = l.class_id
+GROUP BY t.id;`,
+classes:`SELECT c.id, c.name, c.year, COUNT(DISTINCT s.id) AS students,
+       COUNT(DISTINCT l.teacher_id) AS teachers
+FROM classes c
+LEFT JOIN students s ON s.class_id = c.id
+LEFT JOIN lessons l  ON l.class_id = c.id
+GROUP BY c.id;`,
+grades:`SELECT sub.name AS subject, g.grade, g.date,
+       ROUND(AVG(g.grade) OVER (PARTITION BY sub.id), 1) AS subject_avg
+FROM grades g
+JOIN subjects sub ON sub.id = g.subject_id
+WHERE g.student_id = :student_id
+ORDER BY sub.name, g.date;`,
+schedule:`SELECT l.day, l.start_time, l.end_time, sub.name AS subject,
+       t.first_name || ' ' || t.last_name AS teacher, l.room, c.name AS class
+FROM lessons l
+JOIN subjects sub    ON sub.id = l.subject_id
+JOIN classes c       ON c.id = l.class_id
+LEFT JOIN teachers t ON t.id = l.teacher_id
+WHERE l.class_id = :class_id
+ORDER BY l.day, l.start_time;`};
+const mail=(f,l)=>(f+'.'+l).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z.]/g,'')+'@schoolhub.nl';
+const avg=a=>a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length*10)/10:null;
+const f1=v=>v==null?'—':v.toFixed(1);
+const byId=a=>Object.fromEntries(a.map(x=>[x.id,x]));
+const uniq=a=>[...new Set(a)];
+const nextId=a=>a.reduce((m,x)=>Math.max(m,x.id),0)+1;
+const pname=p=>p?p.first_name+' '+p.last_name:'Unassigned';
+const ini=p=>p?(p.first_name[0]+p.last_name.split(' ').pop()[0]).toUpperCase():'—';
+const D=s=>new Date(s+'T12:00:00');
+const fmt=s=>D(s).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+const gt=g=>g<5.5?{b:'var(--fg)',f:'var(--bg)'}:{b:'transparent',f:'var(--fg)'};
+const plural=(n,w)=>n+' '+w+(n===1?'':'s');
+
+function seed(){
+  const teachers=[[1,'Marieke','de Vries'],[2,'Daniel','Okafor'],[3,'Sanne','Bakker'],[4,'Tomás','Reyes'],[5,'Hannah','Lindqvist'],[6,'Yusuf','Demir'],[7,'Lotte','Janssen']].map(([id,f,l])=>({id,first_name:f,last_name:l,email:mail(f,l)}));
+  const subjects=[[1,'Mathematics',1],[2,'English',2],[3,'Dutch',3],[4,'Biology',4],[5,'History',5],[6,'Geography',6],[7,'Physics',1],[8,'Chemistry',4],[9,'Art',7]].map(([id,name,teacher_id])=>({id,name,teacher_id}));
+  const classes=[{id:1,name:'4V1',year:4},{id:2,name:'4V2',year:4},{id:3,name:'5H1',year:5},{id:4,name:'3A2',year:3}];
+  const names='Emma Visser,Noah Smit,Julia Mulder,Liam de Boer,Mila Bos,Finn Vos,Sara Peters,Daan Hendriks,Zoë van Dijk,Sem Dekker,Nora Kok,Luuk Meijer,Eva de Wit,Jesse Brouwer,Lina Dijkstra,Milan Koster,Yara el Amrani,Thijs Prins,Fleur Huisman,Bram Kuipers,Isa Postma,Ruben Willems,Amira Haddad,Lucas Verbeek'.split(',');
+  const students=names.map((n,i)=>{const [f,...r]=n.split(' ');const l=r.join(' ');return{id:i+1,first_name:f,last_name:l,email:mail(f,l),class_id:(i%4)+1}});
+  let r=11;const rnd=()=>{r=(r*16807)%2147483647;return r/2147483647};
+  const dates=['2026-09-11','2026-09-18','2026-09-25','2026-10-01','2026-10-05'];
+  const grades=[];let gid=1;
+  students.forEach(s=>{const base=5.4+rnd()*3;[1,2,3,4,5,7].forEach(sub=>{const n=1+Math.floor(rnd()*3);for(let k=0;k<n;k++)grades.push({id:gid++,student_id:s.id,subject_id:sub,grade:Math.round(Math.min(10,Math.max(3,base+(rnd()-.5)*3.2))*10)/10,date:dates[Math.floor(rnd()*dates.length)]})})});
+  const lessons=[];let lid=1;
+  classes.forEach((c,ci)=>DAYS.forEach((day,di)=>{[0,1,2,3,4,5].forEach(si=>{if(si===5&&(di+ci)%2)return;if(si===0&&(ci+di)%3===0)return;const sub=subjects[(ci*2+di*3+si)%9];lessons.push({id:lid++,class_id:c.id,subject_id:sub.id,teacher_id:sub.teacher_id,room:ROOMS[sub.id],day,start_time:SLOTS[si][0],end_time:SLOTS[si][1]})})}));
+  const tests=[[1,1,'Algebra & functions','2026-10-09'],[3,2,'Reading comprehension','2026-10-12'],[2,4,'Cell biology','2026-10-13'],[1,5,'The Dutch Golden Age','2026-10-15'],[4,3,'Spelling & grammar','2026-10-16'],[3,7,'Mechanics','2026-10-20']].map(([class_id,subject_id,title,date],i)=>({id:i+1,class_id,subject_id,title,date}));
+  return {teachers,subjects,classes,students,grades,lessons,tests};
+}
+function load(){try{const d=JSON.parse(localStorage.getItem(KEY));return d&&d.students?d:null}catch(e){return null}}
+
+class Component extends DCLogic {
+  state={data:load()||seed(),role:this.props.startRole??'admin',page:'dashboard',teacherId:1,studentId:1,search:'',classFilter:'all',modal:null,form:{},detail:null,selClass:null,addSel:'',gStudent:1,gForm:{subject_id:1,grade:'',date:TODAY_DATE},gError:null,schedClass:1,sqlOpen:false,cp:1,toast:null,lastGradeId:null,theme:this.props.startTheme??'light'};
+  navRef=React.createRef();indRef=React.createRef();mainRef=React.createRef();drawerBg=React.createRef();drawerBox=React.createRef();modalBg=React.createRef();modalBox=React.createRef();toastRef=React.createRef();
+
+  k(){const v=this.props.motion??'expressive';return v==='off'?0:v==='subtle'?0.5:1}
+  g(){return this.k()?window.gsap:null}
+  componentDidMount(){let n=0;const t=setInterval(()=>{if(window.gsap||++n>40){clearInterval(t);this.intro()}},80)}
+  intro(){
+    this._prev=this.state;this.moveIndicator(true);const g=this.g();
+    if(g){g.fromTo('[data-side]',{opacity:0,x:-16},{opacity:1,x:0,duration:.7,stagger:.05,ease:'power3.out',clearProps:'opacity,transform'})}
+    this.animatePage();
+  }
+  componentDidUpdate(){
+    const s=this.state,ps=this._prev||s;this._prev=s;
+    const key=x=>[x.page,x.role,x.teacherId,x.studentId,x.selClass,x.schedClass].join('|');
+    if(key(ps)!==key(s)){this.animatePage();this.moveIndicator()}
+    const g=this.g();
+    if(!ps.modal&&s.modal&&g){g.fromTo(this.modalBg.current,{opacity:0},{opacity:1,duration:.3});g.fromTo(this.modalBox.current,{opacity:0,y:24,scale:.97},{opacity:1,y:0,scale:1,duration:.55,ease:'expo.out',clearProps:'opacity,transform'})}
+    if(!ps.detail&&s.detail&&g){g.fromTo(this.drawerBg.current,{opacity:0},{opacity:1,duration:.3});g.fromTo(this.drawerBox.current,{xPercent:100},{xPercent:0,duration:.7,ease:'expo.out',clearProps:'transform'});g.fromTo(this.drawerBox.current.children,{opacity:0,y:16},{opacity:1,y:0,duration:.5,stagger:.05,delay:.15,ease:'power3.out',clearProps:'opacity,transform'})}
+    if(ps.gStudent!==s.gStudent&&g&&this.mainRef.current){g.fromTo(this.mainRef.current.querySelectorAll('[data-ov],[data-row]'),{opacity:0,y:10},{opacity:1,y:0,duration:.45,stagger:.03,ease:'power2.out',clearProps:'opacity,transform'})}
+    if(s.toast&&s.toast!==ps.toast){clearTimeout(this._tt);const el=this.toastRef.current;if(g&&el)g.fromTo(el,{y:30,opacity:0},{y:0,opacity:1,duration:.5,ease:'expo.out'});this._tt=setTimeout(()=>{const e=this.toastRef.current;if(g&&e)g.to(e,{y:30,opacity:0,duration:.3,onComplete:()=>this.setState({toast:null})});else this.setState({toast:null})},2400)}
+    if(s.lastGradeId&&s.lastGradeId!==ps.lastGradeId&&g){const el=document.querySelector(`[data-gid="${s.lastGradeId}"]`);if(el)g.fromTo(el,{scale:0},{scale:1,duration:.6,ease:'back.out(2.2)',clearProps:'transform'})}
+    if(ps.theme!==s.theme&&g&&this.mainRef.current){g.fromTo(this.mainRef.current,{opacity:.4},{opacity:1,duration:.5,clearProps:'opacity'})}
+  }
+  componentWillUnmount(){clearTimeout(this._tt)}
+  moveIndicator(instant){
+    const nav=this.navRef.current,ind=this.indRef.current;if(!nav||!ind)return;
+    const el=nav.querySelector(`[data-nav="${this.state.page}"]`);if(!el){ind.style.opacity='0';return}
+    ind.style.opacity='1';const y=el.offsetTop,g=this.g();
+    if(window.gsap)window.gsap.killTweensOf(ind);
+    if(g&&!instant)g.to(ind,{top:y,duration:.6,ease:'expo.out'});else ind.style.top=y+'px';
+  }
+  animatePage(){
+    const root=this.mainRef.current;if(!root)return;
+    if(this.state.page==='dashboard')this.countUp();
+    const g=this.g(),k=this.k();if(!g)return;
+    const q=s=>root.querySelectorAll(s);
+    g.fromTo(q('[data-title]'),{yPercent:105},{yPercent:0,duration:1,ease:'expo.out',clearProps:'transform'});
+    g.fromTo(q('[data-anim]'),{opacity:0,y:24*k},{opacity:1,y:0,duration:.8,stagger:.06,ease:'expo.out',clearProps:'opacity,transform'});
+    const rows=q('[data-row]');if(rows.length)g.fromTo(rows,{opacity:0,y:8*k},{opacity:1,y:0,duration:.5,stagger:.022,delay:.18,ease:'power2.out',clearProps:'opacity,transform'});
+    const bl=q('[data-block]');if(bl.length)g.fromTo(bl,{opacity:0,y:10*k,scale:.96},{opacity:1,y:0,scale:1,duration:.55,stagger:{each:.01,grid:'auto',from:'start'},delay:.2,ease:'expo.out',clearProps:'opacity,transform'});
+  }
+  countUp(){
+    const g=this.g();if(!g){this.setState({cp:1});return}
+    const o={v:0};this.setState({cp:0});g.to(o,{v:1,duration:1.6,ease:'expo.out',onUpdate:()=>this.setState({cp:o.v})});
+  }
+  setData(fn){this.setState(s=>{const d={...s.data};fn(d);try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}return{data:d}})}
+  toast(msg){this.setState({toast:{msg,id:Date.now()}})}
+  go(p){this.setState({page:p,selClass:null,detail:null})}
+  closeAnim(bg,box,to,done){const g=this.g();if(!g||!bg){done();return}g.to(box,{...to,duration:.25,ease:'power2.in'});g.to(bg,{opacity:0,duration:.28,onComplete:done})}
+  closeModal=()=>this.closeAnim(this.modalBg.current,this.modalBox.current,{opacity:0,y:12,scale:.98},()=>this.setState({modal:null,form:{}}));
+  closeDetail=()=>this.closeAnim(this.drawerBg.current,this.drawerBox.current,{xPercent:100},()=>this.setState({detail:null}));
+  confirm(title,body,cta,action){this.setState({modal:{type:'confirm',title,cta,action},form:{body}})}
+  openModal(type,rec,extra){
+    const d=this.state.data;let form;
+    if(type==='student')form=rec?{...rec,class_id:rec.class_id??''}:{first_name:'',last_name:'',email:'',class_id:this.state.classFilter!=='all'?Number(this.state.classFilter):''};
+    if(type==='teacher')form=rec?{...rec,subjectIds:d.subjects.filter(s=>s.teacher_id===rec.id).map(s=>s.id)}:{first_name:'',last_name:'',email:'',subjectIds:[]};
+    if(type==='klass')form=rec?{...rec}:{name:'',year:4};
+    if(type==='lesson')form=rec?{...rec,teacher_id:rec.teacher_id??'',slot:Math.max(0,SLOTS.findIndex(x=>x[0]===rec.start_time))}:{class_id:this.state.schedClass,subject_id:'',teacher_id:'',room:'',day:'Monday',slot:0,...extra};
+    this.setState({modal:{type,edit:!!rec},form});
+  }
+  onForm=e=>{const{name,value}=e.target;let v=value;if(/_id$|^year$|^slot$/.test(name))v=value===''?'':Number(value);
+    this.setState(s=>{const f={...s.form,[name]:v,error:null};if(name==='subject_id'&&s.modal.type==='lesson'){const sub=s.data.subjects.find(x=>x.id===v);if(sub&&sub.teacher_id)f.teacher_id=sub.teacher_id;if(!f.room||!s.form.room)f.room=ROOMS[v]||f.room}return{form:f}})};
+  err(m){this.setState(s=>({form:{...s.form,error:m}}))}
+  saveModal=()=>{
+    const{modal:m,form:f,data}=this.state;
+    if(m.type==='confirm'){m.action();this.closeModal();return}
+    if(m.type==='student'||m.type==='teacher'){
+      if(!f.first_name?.trim()||!f.last_name?.trim())return this.err('First and last name are required.');
+      const base={first_name:f.first_name.trim(),last_name:f.last_name.trim(),email:f.email?.trim()||mail(f.first_name.trim(),f.last_name.trim())};
+      if(m.type==='student'){const rec={...base,id:f.id||nextId(data.students),class_id:f.class_id===''?null:f.class_id};this.setData(d=>{d.students=f.id?d.students.map(s=>s.id===f.id?rec:s):[...d.students,rec]});this.toast(f.id?'Student updated':'Student added')}
+      else{const id=f.id||nextId(data.teachers),rec={...base,id};this.setData(d=>{d.teachers=f.id?d.teachers.map(t=>t.id===id?rec:t):[...d.teachers,rec];d.subjects=d.subjects.map(s=>f.subjectIds.includes(s.id)?{...s,teacher_id:id}:s.teacher_id===id?{...s,teacher_id:null}:s)});this.toast(f.id?'Teacher updated':'Teacher added')}
+    }
+    if(m.type==='klass'){
+      const name=String(f.name||'').trim().toUpperCase();if(!name)return this.err('Give the class a name, e.g. 4V1.');
+      if(data.classes.some(c=>c.name===name&&c.id!==f.id))return this.err(name+' already exists.');
+      const rec={id:f.id||nextId(data.classes),name,year:Number(f.year)||1};
+      this.setData(d=>{d.classes=f.id?d.classes.map(c=>c.id===f.id?rec:c):[...d.classes,rec]});this.toast(f.id?'Class renamed':'Class '+name+' created');
+    }
+    if(m.type==='lesson'){
+      if(!f.class_id||!f.subject_id)return this.err('Choose a class and a subject.');
+      const [st,en]=SLOTS[f.slot||0];
+      if(data.lessons.some(l=>l.class_id===f.class_id&&l.day===f.day&&l.start_time===st&&l.id!==f.id))return this.err('That class already has a lesson at this time.');
+      const rec={id:f.id||nextId(data.lessons),class_id:f.class_id,subject_id:f.subject_id,teacher_id:f.teacher_id===''?null:f.teacher_id,room:f.room||'',day:f.day,start_time:st,end_time:en};
+      this.setData(d=>{d.lessons=f.id?d.lessons.map(l=>l.id===f.id?rec:l):[...d.lessons,rec]});this.toast(f.id?'Lesson updated':'Lesson added');
+    }
+    this.closeModal();
+  };
+  deleteLesson=()=>{const id=this.state.form.id;this.setData(d=>{d.lessons=d.lessons.filter(l=>l.id!==id)});this.toast('Lesson removed');this.closeModal()};
+  addGrade=()=>{
+    const S=this.state,sid=this._gsid,sub=this._gsub,v=parseFloat(String(S.gForm.grade).replace(',','.'));
+    if(!sid||!sub)return this.setState({gError:'Pick a student and a subject.'});
+    if(isNaN(v)||v<1||v>10)return this.setState({gError:'Enter a grade between 1.0 and 10.0.'});
+    const id=nextId(S.data.grades),st=S.data.students.find(x=>x.id===sid),sb=S.data.subjects.find(x=>x.id===sub);
+    this.setData(d=>{d.grades=[...d.grades,{id,student_id:sid,subject_id:sub,grade:Math.round(v*10)/10,date:S.gForm.date||TODAY_DATE}]});
+    this.setState({lastGradeId:id,gError:null,gForm:{...S.gForm,grade:''}});
+    this.toast(`${v.toFixed(1)} saved for ${st.first_name} · ${sb.name}`);
+  };
+
+  renderVals(){
+    const S=this.state,d=S.data,P=this.props,role=S.role;
+    const T=byId(d.teachers),SB=byId(d.subjects),C=byId(d.classes);
+    const isA=role==='admin',isT=role==='teacher',isS=role==='student';
+    const meT=isT?T[S.teacherId]||d.teachers[0]:null;
+    const meS=isS?d.students.find(x=>x.id===S.studentId)||d.students[0]:null;
+    const tid=meT?.id,sid=meS?.id;
+    const mySubs=isT?d.subjects.filter(x=>x.teacher_id===tid).map(x=>x.id):[];
+    const L=isT?d.lessons.filter(l=>l.teacher_id===tid):isS?d.lessons.filter(l=>meS&&l.class_id===meS.class_id):d.lessons;
+    const myClassIds=isA?d.classes.map(c=>c.id):isT?uniq(L.map(l=>l.class_id)):(meS&&meS.class_id?[meS.class_id]:[]);
+    const allowed=NAV[role],page=allowed.includes(S.page)?S.page:'dashboard';
+    const G={};d.grades.forEach(g=>{(G[g.student_id]=G[g.student_id]||[]).push(g)});
+    const avgOf=id=>avg((G[id]||[]).map(g=>g.grade));
+    const k=this.k();
+
+    const breakdown=st=>{if(!st)return[];
+      const ids=uniq([...d.lessons.filter(l=>l.class_id===st.class_id).map(l=>l.subject_id),...(G[st.id]||[]).map(g=>g.subject_id)]);
+      return ids.map(id=>SB[id]).filter(Boolean).sort((a,b)=>a.name.localeCompare(b.name)).map(sub=>{
+        const gs=(G[st.id]||[]).filter(g=>g.subject_id===sub.id).sort((a,b)=>a.date.localeCompare(b.date)||a.id-b.id);
+        const a=avg(gs.map(g=>g.grade));const tl=d.lessons.find(l=>l.class_id===st.class_id&&l.subject_id===sub.id);
+        return{name:sub.name,teacher:pname(T[tl?tl.teacher_id:sub.teacher_id]),chips:gs.map(g=>({id:g.id,v:g.grade.toFixed(1),date:fmt(g.date),...gt(g.grade)})),avg:f1(a),bar:a==null?'0%':a*10+'%',none:!gs.length}})};
+
+    // header
+    const firstName=meT?meT.first_name:meS?meS.first_name:null;
+    const me=isA?{ini:'AD',name:'School admin',roleLabel:'Admin'}:isT?{ini:ini(meT),name:pname(meT),roleLabel:'Teacher'}:{ini:ini(meS),name:pname(meS),roleLabel:'Student · '+(C[meS?.class_id]?.name||'—')};
+    const pageTitle=page==='dashboard'?'Good morning'+(firstName?', '+firstName:'')+'.':TITLES[page];
+    const selC=page==='classes'&&S.selClass&&C[S.selClass];
+    const subtitles={
+      dashboard:isA?`${plural(d.students.length,'student')}, ${plural(d.teachers.length,'teacher')} and ${plural(d.classes.length,'class').replace('classs','classes')} this term.`:isT?'Your classes, grades and lessons at a glance.':'Your grades, tests and timetable at a glance.',
+      students:`${plural(d.students.length,'student')} across ${d.classes.length} classes. Select a row to see classes and grades.`,
+      teachers:`${plural(d.teachers.length,'teacher')} and the subjects they teach.`,
+      classes:selC?'':isA?'Create classes, add students and assign teachers.':'The classes you teach.',
+      grades:isS?'All your grades this term, per subject.':'Enter a grade and see the student’s averages update.',
+      schedule:'Day, time, subject, teacher, classroom and class.'};
+    const tFix=selC?selC.name:pageTitle;
+
+    // stats
+    const cp=S.cp;
+    const mk=(label,v,note,dec)=>({label,note,display:v==null?'—':dec?(v*cp).toFixed(1):String(Math.round(v*cp))});
+    const myStudents=d.students.filter(s=>myClassIds.includes(s.class_id));
+    const stats=isA?[mk('Students',d.students.length,'enrolled'),mk('Teachers',d.teachers.length,'on staff'),mk('Classes',d.classes.length,'this year')]
+      :isT?[mk('My classes',myClassIds.length,'this term'),mk('My students',myStudents.length,'in total'),mk('Lessons',L.length,'per week')]
+      :[mk('Average',avgOf(sid),'all subjects',true),mk('Grades',(G[sid]||[]).length,'this term'),mk('Lessons',L.length,'per week')];
+
+    const rg=d.grades.filter(g=>isA||(isT&&mySubs.includes(g.subject_id)&&myClassIds.includes(d.students.find(s=>s.id===g.student_id)?.class_id))||(isS&&g.student_id===sid))
+      .sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id).slice(0,6)
+      .map(g=>{const st=d.students.find(s=>s.id===g.student_id);return{title:isS?SB[g.subject_id]?.name:pname(st),sub:isS?pname(T[SB[g.subject_id]?.teacher_id]):(SB[g.subject_id]?.name+' · '+(C[st?.class_id]?.name||'—')),date:fmt(g.date),v:g.grade.toFixed(1),...gt(g.grade)}});
+    const tests=d.tests.filter(t=>myClassIds.includes(t.class_id)&&t.date>=TODAY_DATE).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,4).map(t=>{const days=Math.round((D(t.date)-D(TODAY_DATE))/864e5);return{day:D(t.date).getDate(),mon:D(t.date).toLocaleDateString('en-GB',{month:'short'}),title:t.title,cls:C[t.class_id]?.name,sub:SB[t.subject_id]?.name,when:days===0?'today':days===1?'tomorrow':'in '+days+' days'}});
+    const todayAll=L.filter(l=>l.day===TODAY).sort((a,b)=>a.start_time.localeCompare(b.start_time)||a.class_id-b.class_id);
+    const today=todayAll.slice(0,isA?6:8).map(l=>({start:l.start_time,subject:SB[l.subject_id]?.name,meta:isT?C[l.class_id]?.name:isS?pname(T[l.teacher_id]):C[l.class_id]?.name+' · '+pname(T[l.teacher_id]),room:l.room}));
+
+    // students
+    const q=S.search.trim().toLowerCase();
+    const studentRows=d.students.filter(s=>(S.classFilter==='all'||String(s.class_id)===S.classFilter)&&(!q||(s.first_name+' '+s.last_name+' '+s.email).toLowerCase().includes(q)))
+      .sort((a,b)=>a.last_name.localeCompare(b.last_name)).map(s=>{const a=avgOf(s.id),t=a==null?{b:'transparent',f:'var(--muted)'}:gt(a);
+        return{name:pname(s),email:s.email,ini:ini(s),cls:C[s.class_id]?.name||'—',avg:f1(a),gb:t.b,gf:t.f,
+          open:()=>this.setState({detail:s.id}),
+          edit:e=>{e.stopPropagation();this.openModal('student',s)},
+          del:e=>{e.stopPropagation();this.confirm('Delete '+pname(s)+'?','This removes the student and all '+plural((G[s.id]||[]).length,'grade')+'. This can’t be undone.','Delete',()=>{this.setData(dd=>{dd.students=dd.students.filter(x=>x.id!==s.id);dd.grades=dd.grades.filter(g=>g.student_id!==s.id)});this.toast('Student deleted')})}}});
+
+    const dst=S.detail&&d.students.find(x=>x.id===S.detail);
+    const dt=dst?{id:String(dst.id).padStart(3,'0'),name:pname(dst),email:dst.email,cls:C[dst.class_id]?.name||'—',avg:f1(avgOf(dst.id)),lessons:d.lessons.filter(l=>l.class_id===dst.class_id).length,subjects:breakdown(dst),
+      edit:()=>{this.setState({detail:null});this.openModal('student',dst)},
+      grade:()=>this.setState({detail:null,page:'grades',gStudent:dst.id})}:{subjects:[]};
+
+    // teachers
+    const teacherCards=d.teachers.map(t=>{const subs=d.subjects.filter(s=>s.teacher_id===t.id),tl=d.lessons.filter(l=>l.teacher_id===t.id);
+      return{name:pname(t),email:t.email,ini:ini(t),subjects:subs.map(s=>({name:s.name})),noSubjects:!subs.length,classes:uniq(tl.map(l=>C[l.class_id]?.name)).filter(Boolean).join(' · ')||'No classes',hours:plural(tl.length,'lesson')+' per week',
+        edit:()=>this.openModal('teacher',t),
+        del:()=>this.confirm('Delete '+pname(t)+'?','Their subjects and '+plural(tl.length,'lesson')+' become unassigned.','Delete',()=>{this.setData(dd=>{dd.teachers=dd.teachers.filter(x=>x.id!==t.id);dd.subjects=dd.subjects.map(s=>s.teacher_id===t.id?{...s,teacher_id:null}:s);dd.lessons=dd.lessons.map(l=>l.teacher_id===t.id?{...l,teacher_id:null}:l)});this.toast('Teacher deleted')})}});
+
+    // classes
+    const classCards=d.classes.filter(c=>myClassIds.includes(c.id)).sort((a,b)=>a.name.localeCompare(b.name)).map(c=>{const n=d.students.filter(s=>s.class_id===c.id).length,tn=uniq(d.lessons.filter(l=>l.class_id===c.id&&l.teacher_id).map(l=>l.teacher_id)).length;
+      return{name:c.name,year:c.year,count:plural(n,'student'),meta:plural(tn,'teacher')+' · avg '+f1(avg(d.grades.filter(g=>d.students.find(s=>s.id===g.student_id)?.class_id===c.id).map(g=>g.grade))),open:()=>this.setState({selClass:c.id,addSel:''})}});
+    let cd={students:[],subjects:[],addOpts:[]};
+    if(selC){const cs=d.students.filter(s=>s.class_id===selC.id).sort((a,b)=>a.last_name.localeCompare(b.last_name));const cl=d.lessons.filter(l=>l.class_id===selC.id);
+      cd={name:selC.name,year:selC.year,countLabel:plural(cs.length,'student'),empty:!cs.length,
+        students:cs.map(s=>({name:pname(s),ini:ini(s),avg:f1(avgOf(s.id)),remove:()=>{this.setData(dd=>{dd.students=dd.students.map(x=>x.id===s.id?{...x,class_id:null}:x)});this.toast(s.first_name+' removed from '+selC.name)}})),
+        addOpts:d.students.filter(s=>s.class_id!==selC.id).sort((a,b)=>a.last_name.localeCompare(b.last_name)).map(s=>({id:s.id,label:pname(s)+' · '+(C[s.class_id]?.name||'no class')})),
+        add:()=>{const id=Number(this.state.addSel);if(!id)return;const s=d.students.find(x=>x.id===id);this.setData(dd=>{dd.students=dd.students.map(x=>x.id===id?{...x,class_id:selC.id}:x)});this.setState({addSel:''});this.toast(s.first_name+' added to '+selC.name)},
+        subjects:uniq(cl.map(l=>l.subject_id)).map(id=>SB[id]).filter(Boolean).sort((a,b)=>a.name.localeCompare(b.name)).map(sub=>{const ls=cl.filter(l=>l.subject_id===sub.id);const tId=ls[0].teacher_id;
+          return{name:sub.name,hours:plural(ls.length,'lesson')+'/week',teacherId:tId??'',teacher:pname(T[tId]),change:e=>{const v=Number(e.target.value)||null;this.setData(dd=>{dd.lessons=dd.lessons.map(l=>l.class_id===selC.id&&l.subject_id===sub.id?{...l,teacher_id:v}:l)});this.toast(sub.name+' in '+selC.name+' → '+pname(T[v]))}}}),
+        edit:()=>this.openModal('klass',selC),
+        del:()=>this.confirm('Delete '+selC.name+'?','Students stay in the system without a class; the class’s lessons and tests are removed.','Delete',()=>{this.setData(dd=>{dd.classes=dd.classes.filter(c=>c.id!==selC.id);dd.students=dd.students.map(s=>s.class_id===selC.id?{...s,class_id:null}:s);dd.lessons=dd.lessons.filter(l=>l.class_id!==selC.id);dd.tests=dd.tests.filter(t=>t.class_id!==selC.id)});this.setState({selClass:null});this.toast('Class deleted')})};}
+
+    // grades
+    const gAllowed=isA?d.students:isT?myStudents:[meS].filter(Boolean);
+    const gSorted=[...gAllowed].sort((a,b)=>(C[a.class_id]?.name||'').localeCompare(C[b.class_id]?.name||'')||a.last_name.localeCompare(b.last_name));
+    const gst=isS?meS:(gAllowed.find(s=>s.id===S.gStudent)||gSorted[0]);
+    const gSubs=isA?d.subjects:d.subjects.filter(s=>mySubs.includes(s.id));
+    const gsub=gSubs.find(s=>s.id===S.gForm.subject_id)||gSubs[0];
+    this._gsid=gst?.id;this._gsub=gsub?.id;
+    const ga=gst?avgOf(gst.id):null,gcount=gst?(G[gst.id]||[]).length:0;
+    const low=gst?breakdown(gst).filter(r=>r.avg!=='—'&&parseFloat(r.avg)<5.5).length:0;
+    const ov={name:pname(gst),avg:f1(ga),offset:364.42*(1-(ga||0)/10),meta:(C[gst?.class_id]?.name||'No class')+' · '+plural(gcount,'grade')+' · '+(low?low+' below 5.5':'all sufficient'),subjects:breakdown(gst)};
+
+    // schedule
+    const schedClass=C[S.schedClass]?S.schedClass:d.classes[0]?.id;
+    const SL=isA?d.lessons.filter(l=>l.class_id===schedClass):L;
+    const rowsDef=[0,1,'Break',2,3,'Lunch',4,5];
+    const schedRows=rowsDef.map(r=>{
+      if(typeof r==='string')return{isBreak:true,isSlot:false,label:r,time:r==='Break'?'10:10':'12:10',cells:[]};
+      const [st,en]=SLOTS[r];
+      return{isBreak:false,isSlot:true,start:st,end:en,cells:DAYS.map(day=>{const l=SL.find(x=>x.day===day&&x.start_time===st);const isTd=day===TODAY;
+        if(l)return{has:true,empty:false,subject:SB[l.subject_id]?.name||'—',line:isT?C[l.class_id]?.name+' · '+(l.room||''):pname(T[l.teacher_id]),room:isT?st+'–'+en:(l.room||'—')+(isA?'':' · '+C[l.class_id]?.name),bg:isTd?'var(--fg)':'var(--soft)',fg:isTd?'var(--bg)':'var(--fg)',bd:isTd?'var(--fg)':'var(--line)',cursor:isA?'pointer':'default',click:isA?()=>this.openModal('lesson',l):undefined};
+        return{has:false,empty:true,plus:isA?'+':'',hint:isA?'Add lesson':'',cursor:isA?'pointer':'default',click:isA?()=>this.openModal('lesson',null,{class_id:schedClass,day,slot:r}):undefined}})}});
+    const dayHeads=DAYS.map(n=>({name:n,today:n===TODAY,fg:n===TODAY?'var(--fg)':'var(--muted)'}));
+    const schedTabs=d.classes.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(c=>({name:c.name,bg:c.id===schedClass?'var(--fg)':'transparent',fg:c.id===schedClass?'var(--bg)':'var(--muted)',pick:()=>this.setState({schedClass:c.id})}));
+    const schedNote=isA?plural(SL.length,'lesson')+' per week':isT?'Your week · '+plural(SL.length,'lesson'):'Class '+(C[meS?.class_id]?.name||'—')+' · '+plural(SL.length,'lesson');
+
+    // modal
+    const m=S.modal,f=S.form;
+    const mIs={student:m?.type==='student',teacher:m?.type==='teacher',person:m?.type==='student'||m?.type==='teacher',klass:m?.type==='klass',lesson:m?.type==='lesson',lessonEdit:m?.type==='lesson'&&m.edit,confirm:m?.type==='confirm'};
+    const modalTitle=!m?'':m.type==='confirm'?m.title:(m.edit?'Edit ':'New ')+({student:'student',teacher:'teacher',klass:'class',lesson:'lesson'}[m.type]);
+    const subjectToggles=mIs.teacher?d.subjects.map(s=>{const on=(f.subjectIds||[]).includes(s.id);return{name:s.name,bg:on?'var(--fg)':'transparent',fg:on?'var(--bg)':'var(--fg)',toggle:()=>this.setState(st=>{const ids=st.form.subjectIds||[];return{form:{...st.form,subjectIds:ids.includes(s.id)?ids.filter(x=>x!==s.id):[...ids,s.id]}}})}}):[];
+
+    const showSqlBtn=P.showSql??true;
+    const navColor={};NAV.admin.forEach(p=>navColor[p]=p===page?'var(--fg)':'var(--muted)');
+
+    return{
+      theme:S.theme,themeLabel:S.theme==='light'?'Dark':'Light',toggleTheme:()=>this.setState(s=>({theme:s.theme==='light'?'dark':'light'})),
+      navRef:this.navRef,indRef:this.indRef,mainRef:this.mainRef,drawerBg:this.drawerBg,drawerBox:this.drawerBox,modalBg:this.modalBg,modalBox:this.modalBox,toastRef:this.toastRef,
+      nav:Object.fromEntries(NAV.admin.map(p=>[p,allowed.includes(p)])),navColor,
+      goDashboard:()=>this.go('dashboard'),goStudents:()=>this.go('students'),goTeachers:()=>this.go('teachers'),goClasses:()=>this.go('classes'),goGrades:()=>this.go('grades'),goSchedule:()=>this.go('schedule'),
+      role,isAdmin:isA,notAdmin:!isA,isTeacher:isT,isStudent:isS,teacherId:tid??'',studentId:sid??'',
+      setRole:e=>{const r=e.target.value;this.setState(s=>({role:r,page:NAV[r].includes(s.page)?s.page:'dashboard',selClass:null,detail:null}))},
+      setTeacher:e=>this.setState({teacherId:Number(e.target.value),selClass:null}),
+      setStudent:e=>this.setState({studentId:Number(e.target.value)}),
+      teacherOpts:d.teachers.map(t=>({id:t.id,label:pname(t)})),
+      personStudents:[...d.students].sort((a,b)=>a.last_name.localeCompare(b.last_name)).map(s=>({id:s.id,label:pname(s)+' · '+(C[s.class_id]?.name||'—')})),
+      askReset:()=>this.confirm('Reset demo data?','All students, teachers, classes, grades and lessons go back to the seeded demo set.','Reset',()=>{const fresh=seed();try{localStorage.setItem(KEY,JSON.stringify(fresh))}catch(e){}this.setState({data:fresh,selClass:null,detail:null});this.toast('Demo data restored')}),
+      crumb:'schoolhub / '+role+' / '+page+(selC?' / '+selC.name:''),
+      me,pageTitle:tFix,subtitle:subtitles[page]||(selC?'Year '+selC.year+' class.':''),
+      showSqlBtn,sqlVisible:showSqlBtn&&S.sqlOpen,sql:SQL[page],sqlColor:S.sqlOpen?'var(--fg)':'var(--muted)',toggleSql:()=>this.setState(s=>({sqlOpen:!s.sqlOpen})),
+      is:{dashboard:page==='dashboard',students:page==='students',teachers:page==='teachers',classList:page==='classes'&&!selC,classDetail:!!selC,grades:page==='grades',schedule:page==='schedule'},
+      stats,recentGrades:rg,noRecent:!rg.length,tests,noTests:!tests.length,today,noToday:!today.length,todayCount:isA?plural(todayAll.length,'lesson')+' school-wide':plural(todayAll.length,'lesson'),
+      search:S.search,setSearch:e=>this.setState({search:e.target.value}),classFilter:S.classFilter,setClassFilter:e=>this.setState({classFilter:e.target.value}),
+      classOpts:[...d.classes].sort((a,b)=>a.name.localeCompare(b.name)).map(c=>({id:c.id,name:c.name})),
+      studentRows,noStudents:!studentRows.length,addStudent:()=>this.openModal('student'),
+      hasDetail:!!dst,dt,closeDetail:this.closeDetail,stop:e=>e.stopPropagation(),
+      teacherCards,addTeacher:()=>this.openModal('teacher'),
+      classCards,addClass:()=>this.openModal('klass'),cd,backToClasses:()=>this.setState({selClass:null}),addSel:S.addSel,setAddSel:e=>this.setState({addSel:e.target.value}),
+      canEnter:!isS,gStudentId:gst?.id??'',gSubjectId:gsub?.id??'',
+      gStudentOpts:gSorted.map(s=>({id:s.id,label:pname(s)+' · '+(C[s.class_id]?.name||'—')})),gSubjectOpts:gSubs.map(s=>({id:s.id,name:s.name})),
+      setGStudent:e=>this.setState({gStudent:Number(e.target.value),gError:null}),setGSubject:e=>this.setState(s=>({gForm:{...s.gForm,subject_id:Number(e.target.value)}})),
+      gGrade:S.gForm.grade,setGGrade:e=>this.setState(s=>({gForm:{...s.gForm,grade:e.target.value},gError:null})),
+      gDate:S.gForm.date,setGDate:e=>this.setState(s=>({gForm:{...s.gForm,date:e.target.value}})),
+      gradeKey:e=>{if(e.key==='Enter')this.addGrade()},gError:S.gError,addGrade:this.addGrade,ov,
+      schedTabs,schedNote,dayHeads,schedRows,addLesson:()=>this.openModal('lesson',null,{class_id:schedClass}),
+      hasModal:!!m,mIs,modalTitle,modalCta:m?.type==='confirm'?m.cta:'Save',form:f,onForm:this.onForm,saveModal:this.saveModal,closeModal:this.closeModal,deleteLesson:this.deleteLesson,
+      subjectToggles,subjectOpts:d.subjects.map(s=>({id:s.id,name:s.name})),dayOpts:DAYS,slotOpts:SLOTS.map((s,i)=>({v:i,label:s[0]+' – '+s[1]})),
+      hasToast:!!S.toast,toastMsg:S.toast?.msg
+    };
+  }
+}
+</script>
+</body>
+</html>
