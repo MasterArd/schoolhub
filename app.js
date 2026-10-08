@@ -16,7 +16,14 @@
 /* ---- Constants ---------------------------------------------------------- */
 
 const STORAGE_KEY = "schoolhub-db";
+const AUTH_SESSION_KEY = "schoolhub-auth-session";
 const SQL_JS_CDN = "https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/";
+
+const DEFAULT_LOGIN_ACCOUNTS = [
+    { email: "admin@schoolhub.nl", password: "Admin123!", role: "admin" },
+    { email: "teacher@schoolhub.nl", password: "Teacher123!", role: "teacher", teacherId: 1 },
+    { email: "student@schoolhub.nl", password: "Student123!", role: "student", studentId: 1 },
+];
 
 const SLOTS = [
     ["08:30", "09:20"],
@@ -217,6 +224,112 @@ function loadSavedDatabase() {
     }
 }
 
+function toHex(bytes) {
+    return Array.from(bytes)
+        .map((byte) => byte.toString(16).padStart(2, "0"))
+        .join("");
+}
+
+function fromHex(hex) {
+    const bytes = new Uint8Array(hex.length / 2);
+    for (let i = 0; i < hex.length; i += 2) {
+        bytes[i / 2] = Number.parseInt(hex.slice(i, i + 2), 16);
+    }
+    return bytes;
+}
+
+async function hashPassword(password) {
+    const salt = window.crypto.getRandomValues(new Uint8Array(16));
+    const keyMaterial = await window.crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveBits"]);
+    const keyBytes = await window.crypto.subtle.deriveBits({ name: "PBKDF2", salt, iterations: 120000, hash: "SHA-256" }, keyMaterial, 256);
+    return { salt: toHex(salt), hash: toHex(new Uint8Array(keyBytes)) };
+}
+
+async function verifyPassword(password, saltHex, hashHex) {
+    if (!saltHex || !hashHex) return false;
+    const salt = fromHex(saltHex);
+    const keyMaterial = await window.crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveBits"]);
+    const keyBytes = await window.crypto.subtle.deriveBits({ name: "PBKDF2", salt, iterations: 120000, hash: "SHA-256" }, keyMaterial, 256);
+    const actual = new Uint8Array(keyBytes);
+    const expected = fromHex(hashHex);
+    if (actual.length !== expected.length) return false;
+    let mismatch = 0;
+    for (let i = 0; i < actual.length; i += 1) mismatch |= actual[i] ^ expected[i];
+    return mismatch === 0;
+}
+
+function loadSession() {
+    try {
+        const raw = window.sessionStorage.getItem(AUTH_SESSION_KEY);
+        return raw ? JSON.parse(raw) : null;
+    } catch {
+        return null;
+    }
+}
+
+function saveSession(user) {
+    window.sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({ email: user.email, role: user.role, teacherId: user.teacher_id ?? null, studentId: user.student_id ?? null }));
+}
+
+function clearSession() {
+    window.sessionStorage.removeItem(AUTH_SESSION_KEY);
+}
+
+async function ensureAuthTableAndUsers() {
+    if (!db) return;
+    db.run(`
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY,
+            email TEXT NOT NULL UNIQUE,
+            password_hash TEXT NOT NULL,
+            password_salt TEXT NOT NULL,
+            role TEXT NOT NULL CHECK (role IN ('admin','teacher','student')),
+            teacher_id INTEGER REFERENCES teachers(id) ON DELETE SET NULL,
+            student_id INTEGER REFERENCES students(id) ON DELETE SET NULL
+        );
+    `);
+
+    const users = query("SELECT COUNT(*) AS count FROM users");
+    if (users[0].count > 0) return;
+
+    for (const account of DEFAULT_LOGIN_ACCOUNTS) {
+        const payload = await hashPassword(account.password);
+        const teacherId = account.teacherId ?? null;
+        const studentId = account.studentId ?? null;
+        run("INSERT INTO users (email, password_hash, password_salt, role, teacher_id, student_id) VALUES (?, ?, ?, ?, ?, ?)", [
+            account.email,
+            payload.hash,
+            payload.salt,
+            account.role,
+            teacherId,
+            studentId,
+        ]);
+    }
+
+    persist();
+}
+
+async function loginWithEmail(email, password) {
+    const normalizedEmail = String(email || "").trim().toLowerCase();
+    if (!normalizedEmail || !password) return { ok: false, message: t("auth.invalid") };
+
+    const rows = query("SELECT * FROM users WHERE email = ?", [normalizedEmail]);
+    const user = rows[0];
+    if (!user) return { ok: false, message: t("auth.invalid") };
+
+    const valid = await verifyPassword(password, user.password_salt, user.password_hash);
+    if (!valid) return { ok: false, message: t("auth.invalid") };
+
+    const sessionUser = {
+        email: user.email,
+        role: user.role,
+        teacher_id: user.teacher_id,
+        student_id: user.student_id,
+    };
+    saveSession(sessionUser);
+    return { ok: true, user: sessionUser };
+}
+
 /** Read every table into state.data, which the views render from. */
 function loadData() {
     state.data = {
@@ -266,6 +379,8 @@ async function openDatabaseFile(file) {
         useDatabase(opened);
         persist();
         loadData();
+        await ensureAuthTableAndUsers();
+        loadData();
         Object.assign(state, { selClass: null, detailId: null });
         render();
         toast(t("toast.opened", { file: file.name }));
@@ -286,6 +401,9 @@ const state = {
     page: "dashboard",
     theme: "light",
     sqlOpen: false,
+    authenticated: false,
+    authUser: null,
+    loginError: "",
 
     // Students page
     search: "",
@@ -404,6 +522,41 @@ function gradeTargets(ctx) {
    Views
    ========================================================================== */
 
+function renderLogin() {
+    return `
+        <div class="login-shell" data-anim>
+            <div class="login-card">
+                <div class="brand" style="justify-content:center; margin-bottom:18px;">
+                    <div class="brand-mark"></div>
+                    <span>SchoolHub</span>
+                </div>
+                <div class="login-copy">
+                    <span class="eyebrow">${t("auth.secure")}</span>
+                    <h1>${t("auth.title")}</h1>
+                    <p>${t("auth.subtitle")}</p>
+                </div>
+                <form id="login-form" class="stack" style="gap:14px;">
+                    <label class="field">${t("auth.email")}
+                        <input id="login-email" class="input" type="email" autocomplete="email" value="${esc(state.authUser?.email || "")}" required />
+                    </label>
+                    <label class="field">${t("auth.password")}
+                        <input id="login-password" class="input" type="password" autocomplete="current-password" required />
+                    </label>
+                    ${state.loginError ? `<span class="error">${esc(state.loginError)}</span>` : ""}
+                    <button class="btn btn-primary" type="submit">${t("auth.signIn")}</button>
+                </form>
+                <div class="login-demo">
+                    <span class="eyebrow">${t("auth.demo")}</span>
+                    <ul>
+                        <li>admin@schoolhub.nl / Admin123!</li>
+                        <li>teacher@schoolhub.nl / Teacher123!</li>
+                        <li>student@schoolhub.nl / Student123!</li>
+                    </ul>
+                </div>
+            </div>
+        </div>`;
+}
+
 function renderNav(ctx) {
     $("#nav-items").innerHTML = NAV[ctx.role]
         .map(
@@ -494,6 +647,7 @@ function renderMain(ctx) {
             <button class="link-btn${state.sqlOpen ? " is-active" : ""}" data-action="toggle-sql">SQL</button>
             <button class="link-btn" data-action="toggle-theme">${t(state.theme === "light" ? "top.dark" : "top.light")}</button>
             <button class="link-btn" data-action="switch-language" title="${esc(LANGUAGES[nextLanguage()].name)}">${nextLanguage().toUpperCase()}</button>
+            <button class="link-btn" data-action="logout">${t("auth.signOut")}</button>
             <div class="me">
                 <div class="avatar">${esc(me.initials)}</div>
                 <div class="me-text">
@@ -1182,6 +1336,17 @@ let previous = {}; // what was on screen last time, to decide which animations t
 
 function render() {
     if (!state.data) return;
+
+    if (!state.authenticated) {
+        $("#app").dataset.theme = state.theme;
+        $("#main").innerHTML = renderLogin();
+        $("#drawer-root").innerHTML = "";
+        $("#modal-root").innerHTML = "";
+        $("#nav-items").innerHTML = "";
+        $("#dev-panel").innerHTML = "";
+        return;
+    }
+
     const ctx = buildContext();
     state.page = ctx.page;
 
@@ -1439,7 +1604,9 @@ function savePerson(table, f) {
 function saveClass(f) {
     const name = String(f.name || "").trim().toUpperCase();
     if (!name) throw new Error(t("error.className"));
-    const clash = query("SELECT 1 FROM classes WHERE name = ? AND id IS NOT ?", [name, f.id ?? null]);
+    const clash = f.id
+        ? query("SELECT 1 FROM classes WHERE name = ? AND id != ?", [name, f.id])
+        : query("SELECT 1 FROM classes WHERE name = ?", [name]);
     if (clash.length) throw new Error(t("error.classExists", { name }));
     const year = Math.min(6, Math.max(1, Number(f.year) || 1));
     if (f.id) run("UPDATE classes SET name = ?, year = ? WHERE id = ?", [name, year, f.id]);
@@ -1450,9 +1617,13 @@ function saveClass(f) {
 function saveLesson(f) {
     if (!f.class_id || !f.subject_id) throw new Error(t("error.classAndSubject"));
     const [start, end] = SLOTS[f.slot || 0];
-    const clash = query("SELECT 1 FROM lessons WHERE class_id = ? AND day = ? AND start_time = ? AND id IS NOT ?", [
-        f.class_id, f.day, start, f.id ?? null,
-    ]);
+    const clash = f.id
+        ? query("SELECT 1 FROM lessons WHERE class_id = ? AND day = ? AND start_time = ? AND id != ?", [
+              f.class_id, f.day, start, f.id,
+          ])
+        : query("SELECT 1 FROM lessons WHERE class_id = ? AND day = ? AND start_time = ?", [
+              f.class_id, f.day, start,
+          ]);
     if (clash.length) throw new Error(t("error.lessonClash"));
 
     const values = [f.class_id, f.subject_id, f.teacher_id === "" ? null : f.teacher_id, f.room || "", f.day, start, end];
@@ -1542,6 +1713,31 @@ const actions = {
         loadData(); // re-reads subject names in the new language
         render();
     },
+    "login-submit": async () => {
+        const email = document.getElementById("login-email")?.value || "";
+        const password = document.getElementById("login-password")?.value || "";
+        const result = await loginWithEmail(email, password);
+        if (!result.ok) {
+            state.loginError = result.message;
+            render();
+            return;
+        }
+        state.authenticated = true;
+        state.authUser = result.user;
+        state.role = result.user.role;
+        if (result.user.role === "teacher") state.teacherId = result.user.teacher_id || state.teacherId || 1;
+        if (result.user.role === "student") state.studentId = result.user.student_id || state.studentId || 1;
+        state.loginError = "";
+        render();
+    },
+    logout: () => {
+        clearSession();
+        state.authenticated = false;
+        state.authUser = null;
+        state.loginError = "";
+        state.role = "admin";
+        render();
+    },
 
     // Dev panel
     "download-db": downloadDatabase,
@@ -1551,9 +1747,11 @@ const actions = {
             t("confirm.reset.title"),
             t("confirm.reset.body"),
             t("confirm.reset.cta"),
-            () => {
+            async () => {
                 useDatabase(freshDatabase());
                 persist();
+                loadData();
+                await ensureAuthTableAndUsers();
                 loadData();
                 Object.assign(state, { selClass: null, detailId: null });
                 render();
@@ -1756,6 +1954,13 @@ function attachEvents() {
         if (el.dataset.field && el.tagName === "INPUT") updateFormField(el);
     });
 
+    document.addEventListener("submit", (event) => {
+        const form = event.target;
+        if (!(form instanceof HTMLFormElement) || form.id !== "login-form") return;
+        event.preventDefault();
+        actions["login-submit"]?.();
+    });
+
     document.addEventListener("change", (event) => {
         const el = event.target;
         if (el.dataset.change) changes[el.dataset.change]?.(el.value, el);
@@ -1797,6 +2002,20 @@ async function start() {
     useDatabase(saved || freshDatabase());
     if (!saved) persist();
     loadData();
+    await ensureAuthTableAndUsers();
+    loadData();
+
+    const session = loadSession();
+    if (session?.email) {
+        const rows = query("SELECT * FROM users WHERE email = ?", [session.email.toLowerCase()]);
+        if (rows[0]) {
+            state.authenticated = true;
+            state.authUser = rows[0];
+            state.role = rows[0].role;
+            if (rows[0].role === "teacher") state.teacherId = rows[0].teacher_id || state.teacherId || 1;
+            if (rows[0].role === "student") state.studentId = rows[0].student_id || state.studentId || 1;
+        }
+    }
 
     attachEvents();
     render();
